@@ -1,0 +1,60 @@
+name: Integration Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start services
+        run: docker compose up -d
+
+      # Free parallelism — Python installs while Redmine migrates
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: pip install -r tests/requirements.txt
+
+      - name: Wait for Redmine to be ready
+        run: |
+          echo "Waiting for Redmine..."
+          for i in $(seq 1 36); do
+            curl -sf http://localhost/ && echo "Redmine is up!" && break
+            echo "Attempt $i/36, sleeping 5s..."
+            sleep 5
+          done
+          curl -sf http://localhost/ || (docker compose logs && exit 1)
+
+      - name: Bootstrap Redmine
+        run: |
+          # Allow admin login (password not expired)
+          docker compose exec -T db psql -U redmine -c \
+            "UPDATE users SET must_change_passwd = false WHERE login = 'admin';"
+
+          # Enable REST API
+          docker compose exec -T db psql -U redmine -c \
+            "INSERT INTO settings (name, value, updated_on)
+             VALUES ('rest_api_enabled', '1', NOW())
+             ON CONFLICT (name) DO UPDATE SET value = '1';"
+
+          # Create a known API token for admin (user_id = 1)
+          docker compose exec -T db psql -U redmine -c \
+            "INSERT INTO tokens (user_id, action, value, created_on, updated_on)
+             VALUES (1, 'api', 'testtoken1234', NOW(), NOW());"
+
+      - name: Run API tests
+        run: pytest tests/ -v
+        env:
+          REDMINE_URL: http://localhost
+          REDMINE_API_KEY: testtoken1234
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs
