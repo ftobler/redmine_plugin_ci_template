@@ -33,20 +33,7 @@ jobs:
           sleep 1
 
       - name: Bootstrap Redmine
-        run: |
-          MYSQL="docker compose exec -T db mariadb -uredmine -predmine_password redmine"
-
-          # Allow admin login (password not expired)
-          $MYSQL -e "UPDATE users SET must_change_passwd = 0 WHERE login = 'admin';"
-
-          # Enable REST API
-          $MYSQL -e "INSERT INTO settings (name, value, updated_on)
-                     VALUES ('rest_api_enabled', '1', NOW())
-                     ON DUPLICATE KEY UPDATE value = '1';"
-
-          # Create a known API token for admin (user_id = 1)
-          $MYSQL -e "INSERT INTO tokens (user_id, action, value, created_on, updated_on)
-                     VALUES (1, 'api', 'testtoken1234', NOW(), NOW());"
+        run: python test/bootstrap.py
 
       - name: Run API test
         run: pytest test/ -v -s
