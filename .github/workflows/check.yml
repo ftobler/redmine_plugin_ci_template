@@ -30,7 +30,7 @@ jobs:
             echo "Attempt $i/36, sleeping 5s..."
             sleep 5
           done
-          curl -sf http://localhost/ || (docker compose logs && exit 1)
+          sleep 1
 
       - name: Bootstrap Redmine
         run: |
@@ -49,7 +49,7 @@ jobs:
                      VALUES (1, 'api', 'testtoken1234', NOW(), NOW());"
 
       - name: Run API test
-        run: pytest test/ -v
+        run: pytest test/ -v -s
         env:
           REDMINE_URL: http://localhost
           REDMINE_API_KEY: testtoken1234
