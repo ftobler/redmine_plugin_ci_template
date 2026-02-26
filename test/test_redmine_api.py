@@ -23,5 +23,6 @@ def test_current_user(redmine_config):
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
 
     data = response.json()
+    print(data)
     assert "user" in data, "Response does not contain 'user'"
     assert "id" in data["user"], "User data missing 'id'"
