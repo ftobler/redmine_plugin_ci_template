@@ -34,7 +34,7 @@ jobs:
 
       - name: Bootstrap Redmine
         run: |
-          MYSQL="docker compose exec -T db mysql -uredmine -predmine_password redmine"
+          MYSQL="docker compose exec -T db mariadb -uredmine -predmine_password redmine"
 
           # Allow admin login (password not expired)
           $MYSQL -e "UPDATE users SET must_change_passwd = 0 WHERE login = 'admin';"
