@@ -55,6 +55,5 @@ jobs:
           REDMINE_URL: http://localhost
           REDMINE_API_KEY: testtoken1234
 
-      - name: Dump logs on failure
-        if: failure()
+      - name: Dump docker logs
         run: docker compose logs
