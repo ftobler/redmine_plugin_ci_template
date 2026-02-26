@@ -20,7 +20,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install test dependencies
-        run: pip install -r tests/requirements.txt
+        run: pip install -r test/requirements.txt
 
       - name: Wait for Redmine to be ready
         run: |
@@ -49,8 +49,8 @@ jobs:
             "INSERT INTO tokens (user_id, action, value, created_on, updated_on)
              VALUES (1, 'api', 'testtoken1234', NOW(), NOW());"
 
-      - name: Run API tests
-        run: pytest tests/ -v
+      - name: Run API test
+        run: pytest test/ -v
         env:
           REDMINE_URL: http://localhost
           REDMINE_API_KEY: testtoken1234
