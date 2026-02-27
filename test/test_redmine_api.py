@@ -1,22 +1,15 @@
-import os
 import pytest
 import requests
+import bootstrap
 
 
-@pytest.fixture
-def redmine_config():
-    url = os.environ.get("REDMINE_URL")
-    api_key = os.environ.get("REDMINE_API_KEY")
-    if not url or not api_key:
-        pytest.skip("REDMINE_URL or REDMINE_API_KEY not set")
-    return url.rstrip("/"), api_key
-
-
-def test_current_user(redmine_config):
-    url, api_key = redmine_config
+def test_current_user():
+    url = bootstrap.REDMINE_URL_HTTP
+    api_key = bootstrap.API_KEY
     endpoint = f"{url}/users/current.json"
 
     headers = {"X-Redmine-API-Key": api_key}
+    print(headers, endpoint)
 
     response = requests.get(endpoint, headers=headers)
 
