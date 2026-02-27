@@ -30,13 +30,20 @@ def sql(query):
     print(f"OK: {query[:60]}...")
 
 
+def inject_setting(key: str, value: str):
+    sql(f"INSERT INTO settings (name, value, updated_on) VALUES ('{key}', '{value}', NOW()) ON DUPLICATE KEY UPDATE value = '{value}';")
+
+
 def inject_into_db():
 
     # admin user shall no longer change password on first login. it is kept with admin/admin.
     sql("UPDATE users SET must_change_passwd = 0 WHERE login = 'admin';")
 
     # enable REST api
-    sql("INSERT INTO settings (name, value, updated_on) VALUES ('rest_api_enabled', '1', NOW()) ON DUPLICATE KEY UPDATE value = '1';")
+    inject_setting("rest_api_enabled", "1")
+    inject_setting("protocol", "https")
+    inject_setting("host_name", "localhost")
+    inject_setting("app_title", "Redmine Throwaway Test Instance")
 
     # inject a API token to be able to access the database
     # userid 1 is the admin, so this has access to everything.
@@ -45,6 +52,7 @@ def inject_into_db():
     # we create a Oauth2 (doorkeeper) Application.
     # this is the provider/upstream side
     sql(f"INSERT INTO oauth_applications (id, name, uid, secret, redirect_uri, scopes, confidential, created_at, updated_at) VALUES (1, '{APPLICATION}', '{UID}', '{SECRET_HASH}', '{REDIRECT_URI}', '{SCOPES}', 1, NOW(), NOW());")
+
 
     print("Bootstrap complete.")
 
