@@ -53,7 +53,6 @@ def inject_into_db():
     # this is the provider/upstream side
     sql(f"INSERT INTO oauth_applications (id, name, uid, secret, redirect_uri, scopes, confidential, created_at, updated_at) VALUES (1, '{APPLICATION}', '{UID}', '{SECRET_HASH}', '{REDIRECT_URI}', '{SCOPES}', 1, NOW(), NOW());")
 
-
     print("Bootstrap complete.")
 
 
